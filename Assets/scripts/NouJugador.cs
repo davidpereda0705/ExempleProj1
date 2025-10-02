@@ -4,12 +4,21 @@ using UnityEngine;
 public class NewMonoBehaviourScript : MonoBehaviour
 {
     public float vel = 10f;
+    private Vector3 limitInferiorEsquerra;
+    private Vector3 limitSuperiorDret;
     private Camera camera;
     //public GameObject jugador;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         camera = Camera.main;
+        //Control limits pantalla
+        //Trobem la distancia entre la camera i l'objecte que no volem que surti
+        //  del view port, en les z's. Quant es mou la nau abans d arribar al viewport
+        float distanciaZCameraNau = Mathf.Abs(transform.position.z - camera.transform.position.z);
+
+        limitInferiorEsquerra = camera.ViewportToWorldPoint(new Vector3(0, 0, distanciaZCameraNau));
+        limitSuperiorDret = camera.ViewportToWorldPoint(new Vector3(1, 1, distanciaZCameraNau));
     }
 
     // Update is called once per frame
@@ -17,17 +26,11 @@ public class NewMonoBehaviourScript : MonoBehaviour
     {
 
         MovimentNau();
+        ControlLimitsPantalla();
     }
     void MovimentNau()
     {
-        /*if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
-        {
-            
-        }*/
-        //Control limits pantalla
 
-        Vector3 limitInferiorEsquerra = camera.ViewportToWorldPoint(new Vector2 (0, 0));
-        Vector3 limitSuperiorDret = camera.ViewportToWorldPoint(new Vector2(1, 1));
         //Moviment nau.
         float direccioHoritzontal = Input.GetAxisRaw("Horizontal");
         float direccioVertical = Input.GetAxisRaw("Vertical");
@@ -46,10 +49,26 @@ public class NewMonoBehaviourScript : MonoBehaviour
         // Pero, si aquest primer parametre, te un valor mes petit que el segon parametre
         //  retornara el segon parametre,. I, si te un valor mes gran que el tercer
         //   parametre, ens retornara el tercer parametre
-        nouDesplacament.x = Math.Clamp(nouDesplacament.x, limitInferiorEsquerra.x, limitSuperiorDret.x);
-        nouDesplacament.y = Math.Clamp(nouDesplacament.y, limitInferiorEsquerra.y, limitSuperiorDret.y);
+
+        
 
         //Apliquem el vector desplaçament a l'objecte
         transform.position += nouDesplacament;
+    }
+    void ControlLimitsPantalla()
+    {
+        //No podem modificar el transform.position.x, nomes consultar-ho, per tant, 
+        //fem una nova variable.
+        Vector3 novaPos = transform.position;
+
+        //Control dels limits de la pantalla
+        // El metode Math.Clamp, ens retorna el primer parametre
+        //Pero, si aquest primer parametre, te un valor mes petit que el segon parametre,
+        //retornara el segon parametre. I si el primer, te un valor mes fran que el tercer
+        //parametre ens retornara el tercer paramentre
+        novaPos.x = Math.Clamp(novaPos.x, limitInferiorEsquerra.x, limitSuperiorDret.x);
+        novaPos.y = Math.Clamp(novaPos.y, limitInferiorEsquerra.y, limitSuperiorDret.y);
+
+        transform.position = novaPos;
     }
 }
